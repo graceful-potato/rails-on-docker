@@ -1,0 +1,77 @@
+version: '3'
+
+services:
+  web:
+    extends:
+      file: common-services.yml
+      service: app
+    command: bundle exec rails server -b 0.0.0.0
+    ports:
+      - "3000:3000"
+      - "4000:4000"
+    stdin_open: true
+    tty: true
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+  
+  js:
+    extends:
+      file: common-services.yml
+      service: app
+    command: yarn build --watch
+
+  css:
+    extends:
+      file: common-services.yml
+      service: app
+    command: yarn build:css --watch
+
+  redis:
+    image: redis
+    volumes:
+      - redis_data:/data
+      - type: bind
+        source: ./.dockerdev/.rediscli_history
+        target: /root/.rediscli_history
+    healthcheck:
+      test: redis-cli ping
+      interval: 1s
+      timeout: 3s
+      retries: 30
+
+  database:
+    image: postgres
+    environment:
+      - POSTGRES_USER=$DATABASE_USER
+      - POSTGRES_PASSWORD=$DATABASE_PASSWORD
+    volumes:
+      - db_data:/var/lib/postgresql/data
+      - type: bind
+        source: .dockerdev/.psql_history
+        target: /root/.psql_history
+    healthcheck:
+      test: pg_isready -U postgres -h 127.0.0.1
+      interval: 1s
+
+  selenium_chrome:
+    image: selenium/standalone-chrome-debug
+    logging:
+      driver: none
+    ports:
+      - "5900:5900"
+
+  sidekiq:
+    extends:
+      file: common-services.yml
+      service: app
+    command: bundle exec sidekiq
+
+volumes:
+  db_data:
+  redis_data:
+  bundle:
+  node_modules:
+  rails_cache:

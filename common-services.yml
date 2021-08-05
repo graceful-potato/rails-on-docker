@@ -1,0 +1,41 @@
+version: '3'
+
+services:
+  app:
+    build:
+      context: .
+      args:
+        RUBY_VERSION: $RUBY
+        NODE_MAJOR: $NODE
+        YARN_VERSION: $YARN
+        BUNDLER_VERSION: $BUNDLER
+        APP_USER: $APP_USER
+        APP_GROUP: $APP_GROUP
+        APP_PATH: $APP_PATH
+    tty: true
+    volumes:
+      - .:/$APP_PATH:cached
+      - bundle:/usr/local/bundle
+      - rails_cache:$APP_PATH/tmp/cache
+      - node_modules:$APP_PATH/node_modules
+      - type: bind
+        source: ./.dockerdev/.bash_history
+        target: /home/$APP_USER/.bash_history
+      - type: bind
+        source: .dockerdev/.psql_history
+        target: /home/$APP_USER/.psql_history
+      - type: bind
+        source: .dockerdev/.pry_history
+        target: /home/$APP_USER/.pry_history
+      - type: bind
+        source: .dockerdev/.irb_history
+        target: /home/$APP_USER/.irb_history
+    environment:
+      # - RAILS_ENV=${RAILS_ENV:-development}
+      # - NODE_ENV=${NODE_ENV:-development}
+      - YARN_CACHE_FOLDER=$APP_PATH/node_modules/.yarn-cache
+      - DATABASE_HOST=$DATABASE_HOST
+      - DATABASE_USER=$DATABASE_USER
+      - DATABASE_PASSWORD=$DATABASE_PASSWORD
+      - SIDEKIQ_USER=$SIDEKIQ_USER
+      - SIDEKIQ_PASSWORD=$SIDEKIQ_USER

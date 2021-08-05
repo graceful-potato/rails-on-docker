@@ -1,0 +1,19 @@
+# Git
+.git
+.gitignore
+
+# Logs
+log/*
+
+# Temp files
+tmp/*
+
+# Env files. I am not sure that i should ignore these files
+# .env
+# .dockerdev/*
+
+node_modules/*
+
+# Editor temp files
+*.swp
+*.swo
